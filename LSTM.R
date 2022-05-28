@@ -68,7 +68,7 @@ class(train)
 #將輸入數據 X 重新縮放到激活函數的範圍。
 #如前所述，LSTM 的默認激活函數是 sigmoid 函數，其範圍為 [-1, 1]。
 #下面的代碼將有助於這種轉換。
-#請注意，訓練數據集的最小值和最大值是用於縮放訓練和測試數據集以及預測值的縮放係數。
+#訓練數據集的最小值和最大值是用於縮放訓練和測試數據集以及預測值的縮放係數。
 #這確保了測試數據的最小值和最大值不會影響模型。
 scale_data <- function(train, test, feature_range = c(0, 1)){
   x <- train
@@ -83,13 +83,12 @@ scale_data <- function(train, test, feature_range = c(0, 1)){
   return(list(scaled_train = as.vector(scaled_train), scaled_test = as.vector(scaled_test), scaler = c(min = min(x), max = max(x))))
   }
 Scaled <- scale_data(train, test, c(-1, 1));Scaled
-summary(Scaled)
+summary(Scaled) #重新縮放之後的結果為
 y_train <- Scaled$scaled_train$`x`;y_train
-class(y_train)
-x_train <- Scaled$scaled_train$`x-1`;x_train
-class(x_train)
-y_test <- Scaled$scaled_test$x;y_test
-x_test <- Scaled$scaled_test$`x-1`;x_test
+x_train <- Scaled$scaled_train$`x-1`
+
+y_test <- as.data.frame(Scaled$scaled_test$x);y_test
+x_test <- as.data.frame(Scaled$scaled_test$x-1);x_test
 
 #The following code will be required to revert the predicted values to the original scale.
 #需要以下程式才能將預測值恢復到原始尺度。
@@ -116,6 +115,7 @@ invert_scaling <- function(scaled, scaler, feature_range = c(0, 1)){
 #Since the network is stateful, we have to provide the input batch in 3-dimensional array of the form 
 #[samples, timesteps, features] from the current [samples, features],
 dim(x_train) <- c(length(x_train), 1, 1);dim(x_train) #取得training的資料長度與維度(128, 1, 1)
+
 #specify required arguments
 X_shape1 = dim(x_train)[1];X_shape1 #128
 X_shape2 = dim(x_train)[2];X_shape2 #1
@@ -125,7 +125,7 @@ units = 1 # can just this, in model tuning phase 神經元位數
 units = 10
 
 #建立模型
-model <- keras_model_sequential();model
+model <- keras_model_sequential();model #錯誤:Valid installation of TensorFlow not found.
 model%>%
   layer_lstm(units, batch_input_shape = c(batch_size, X_shape2, X_shape3), stateful= TRUE)%>%
   layer_dense(units = 1)
